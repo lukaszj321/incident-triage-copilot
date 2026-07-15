@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.1] - 2026-07-15
+
+### Fixed
+
+- Made the installed console entry-point test portable across Windows and Linux.
+- Removed platform-dependent absolute fixture paths from CLI and service tests.
+- Restored a fully green GitHub Actions pipeline on Ubuntu.
+
+### Documentation
+
+- Added a complete README table of contents and return navigation links.
+- Corrected runtime and development requirements.
+- Updated the roadmap to exclude already implemented functionality.
+
+No production runtime behavior, API contract, report schema or database schema changed in this release.
+
 ## [0.6.0] - 2026-07-15
 
 ### Added

@@ -146,11 +146,11 @@ Endpointy:
 - `GET /v1/history`,
 - `GET /v1/history/{incident_id}`.
 
-`/health` zwraca `service_version`, ktora pochodzi z centralnej wersji aplikacji `0.6.0`.
+`/health` zwraca `service_version`, ktora pochodzi z centralnej wersji aplikacji `0.6.1`.
 
 Projekt rozroznia cztery wersje:
 
-- wersja aplikacji: `0.6.0`,
+- wersja aplikacji: `0.6.1`,
 - publiczny `schema_version` raportow i historii: `0.4`,
 - `api_version`: `1`,
 - wersja schematu SQLite: `1`.

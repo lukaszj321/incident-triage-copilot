@@ -29,7 +29,7 @@ def test_health_without_database() -> None:
         "status": "ok",
         "service": "incident-triage-copilot",
         "api_version": "1",
-        "service_version": "0.6.0",
+        "service_version": "0.6.1",
         "history_storage": "disabled",
     }
 
@@ -42,7 +42,7 @@ def test_health_with_database_hides_path(tmp_path: Path) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["history_storage"] == "configured"
-    assert body["service_version"] == "0.6.0"
+    assert body["service_version"] == "0.6.1"
     assert str(tmp_path) not in str(body)
 
 
@@ -143,7 +143,7 @@ def test_openapi_contains_expected_paths_and_version(tmp_path: Path) -> None:
     schema = app.openapi()
 
     assert schema["info"]["title"] == "Incident Triage Copilot API"
-    assert schema["info"]["version"] == "0.6.0"
+    assert schema["info"]["version"] == "0.6.1"
     for path in ["/health", "/ready", "/v1/analyze", "/v1/analyze-bundle", "/v1/history", "/v1/history/{incident_id}"]:
         assert path in schema["paths"]
     assert "AnalyzeRequest" in schema["components"]["schemas"]

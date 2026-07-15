@@ -339,7 +339,7 @@ def test_console_entry_point_version() -> None:
     )
 
     assert result.returncode == 0
-    assert "0.6.0" in result.stdout
+    assert "0.6.1" in result.stdout
 
 
 def test_triadapter_still_uses_same_cli() -> None:

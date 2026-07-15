@@ -1,6 +1,6 @@
 [project]
 name = "incident-triage-copilot"
-version = "0.6.0"
+version = "0.6.1"
 description = "MVP CLI for evidence-based incident log triage without LLMs."
 requires-python = ">=3.12"
 dependencies = [
