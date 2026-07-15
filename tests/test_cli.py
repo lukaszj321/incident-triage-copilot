@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import io
 import json
+import os
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -321,13 +323,19 @@ def test_cli_analyze_bundle_invalid_similar_limit() -> None:
 
 
 def test_console_entry_point_version() -> None:
-    executable = Path(sys.executable).with_name("incident-triage.exe")
+    executable = shutil.which(
+        "incident-triage",
+        path=os.pathsep.join([str(Path(sys.executable).parent), *os.get_exec_path()]),
+    )
+
+    assert executable is not None
 
     result = subprocess.run(
-        [str(executable), "--version"],
+        [executable, "--version"],
         check=False,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
 
     assert result.returncode == 0
