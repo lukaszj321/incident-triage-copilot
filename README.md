@@ -1,6 +1,10 @@
 # Incident Triage Copilot
 
-Incident Triage Copilot to deterministyczny copilot do triage'u incydentow na podstawie tekstowych logow. Projekt udostepnia ta sama logike domenowa przez CLI oraz publiczne API HTTP w FastAPI.
+Incident Triage Copilot zamienia tekstowe logi aplikacyjne w uporzadkowany raport wstepnej diagnozy incydentu.
+
+Narzedzie koreluje powiazane wpisy po `request_id` lub czasie, rozpoznaje obslugiwane typy awarii, pokazuje dokladne linie logu bedace dowodem i proponuje kolejne kroki diagnostyczne.
+
+Nie zastepuje analizy inzyniera i nie wykonuje automatycznej naprawy. Automatyzuje pierwszy, powtarzalny etap triage'u.
 
 Najwazniejsza zasada: kazdy wniosek musi miec dowody w konkretnych, niezmodyfikowanych liniach logu. Aplikacja nie zgaduje przyczyny bez evidence.
 
@@ -8,6 +12,7 @@ Projekt nie uzywa LLM, embeddingow, PostgreSQL, SQLAlchemy, frontendu ani uwierz
 
 ## Spis treści
 
+- [Jak to działa w praktyce](#jak-to-działa-w-praktyce)
 - [Cel MVP](#cel-mvp)
 - [Aktualny zakres](#aktualny-zakres)
 - [Wymagania](#wymagania)
@@ -25,6 +30,109 @@ Projekt nie uzywa LLM, embeddingow, PostgreSQL, SQLAlchemy, frontendu ani uwierz
 - [Struktura projektu](#struktura-projektu)
 - [Roadmap](#roadmap)
 - [Ograniczenia](#ograniczenia)
+
+## Jak to działa w praktyce
+
+### Przepływ analizy
+
+```mermaid
+flowchart LR
+    A[CLI lub FastAPI] --> B[Logi tekstowe]
+    B --> C[Parser i normalizacja]
+    C --> D[Korelacja request_id lub okno 30 s]
+    D --> E[Deterministyczne reguly detekcji]
+    E --> F[Finding z evidence i context]
+    F --> G[Raport JSON]
+    H[(Historia SQLite)] --> I[Ranking podobnych incydentow]
+    F --> I
+    I --> G
+```
+
+Podstawowa analiza działa bez bazy danych. SQLite jest używane tylko do przechowywania rozwiązanych incydentów i wyszukiwania podobnych przypadków.
+
+### Przykładowy incydent
+
+Klient próbuje wykonać płatność, ale aplikacja zwraca błąd. Operator lub inżynier supportu otrzymuje log i chce szybko sprawdzić, czy problem dotyczy aplikacji, bazy danych, autoryzacji czy zewnętrznego API. Incident Triage Copilot pomaga przygotować wstępną diagnozę na podstawie dostępnych wpisów, ale nie jest kompletnym systemem produkcyjnym ani narzędziem automatycznej naprawy.
+
+### Log wejściowy
+
+```text
+2026-07-15T09:14:02Z INFO request_id=abc-1 user=zażółć start checkout submit
+2026-07-15T09:14:05Z ERROR request_id=abc-1 upstream payment API timed out after 3000ms endpoint=https://payments.example.test/v1/charge
+2026-07-15T09:14:05Z INFO request_id=abc-1 response_status=502
+```
+
+### Uruchomienie
+
+```powershell
+incident-triage analyze fixtures/api_timeout.log
+```
+
+### Najważniejsza część wyniku
+
+Poniżej znajduje się skrócony fragment rzeczywistej odpowiedzi CLI.
+
+```json
+{
+  "status": "incidents_detected",
+  "findings": [
+    {
+      "incident_type": "external_api_timeout",
+      "symptom": "Timeout while calling an external API or upstream HTTP service.",
+      "probable_cause": "The external API or upstream HTTP service did not respond before the configured timeout.",
+      "confidence": 0.9,
+      "correlation": {
+        "strategy": "request_id",
+        "key": "abc-1",
+        "window_seconds": null,
+        "source_count": 1
+      },
+      "evidence": [
+        {
+          "source_name": "fixtures/api_timeout.log",
+          "line_number": 2,
+          "text": "2026-07-15T09:14:05Z ERROR request_id=abc-1 upstream payment API timed out after 3000ms endpoint=https://payments.example.test/v1/charge"
+        }
+      ],
+      "context": [
+        {
+          "source_name": "fixtures/api_timeout.log",
+          "line_number": 1,
+          "text": "2026-07-15T09:14:02Z INFO request_id=abc-1 user=zażółć start checkout submit"
+        },
+        {
+          "source_name": "fixtures/api_timeout.log",
+          "line_number": 3,
+          "text": "2026-07-15T09:14:05Z INFO request_id=abc-1 response_status=502"
+        }
+      ],
+      "recommended_actions": [
+        "Check the referenced upstream API endpoint and provider status.",
+        "Inspect client timeout settings and retry behavior for the affected request.",
+        "Correlate this line with surrounding request identifiers before changing production settings."
+      ]
+    }
+  ]
+}
+```
+
+### Co aplikacja ustaliła
+
+- Wykryto timeout zewnętrznego API.
+- Powiązane wpisy połączono przez `request_id=abc-1`.
+- Dokładna linia timeoutu została wskazana jako `evidence`.
+- Status HTTP `502` został dołączony jako `context`.
+- Aplikacja zaproponowała kolejne kroki diagnostyczne; jest to wstępna diagnoza, czyli najbardziej prawdopodobne wyjaśnienie według reguły.
+
+### Co to daje operatorowi
+
+Bez narzędzia operator musiałby ręcznie przeszukać log, znaleźć powiązane wpisy, połączyć je po identyfikatorze requestu, sklasyfikować typ awarii i przygotować podstawowe podsumowanie incydentu. Z narzędziem otrzymuje od razu uporządkowane podsumowanie, klasyfikację problemu, dokładne linie dowodowe, kontekst requestu i listę kolejnych czynności diagnostycznych.
+
+logi -> normalizacja -> korelacja -> wykrycie reguły -> raport z dowodami
+
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
 
 ## Cel MVP
 
@@ -220,7 +328,32 @@ Aktualny `schema_version` publicznych odpowiedzi analizy i historii to `0.4`.
     "findings_count": 1,
     "incident_types": ["external_api_timeout"]
   },
-  "findings": []
+  "findings": [
+    {
+      "incident_type": "external_api_timeout",
+      "symptom": "Timeout while calling an external API or upstream HTTP service.",
+      "probable_cause": "The external API or upstream HTTP service did not respond before the configured timeout.",
+      "evidence": [
+        {
+          "source_name": "fixtures/api_timeout.log",
+          "line_number": 2,
+          "text": "2026-07-15T09:14:05Z ERROR request_id=abc-1 upstream payment API timed out after 3000ms endpoint=https://payments.example.test/v1/charge"
+        }
+      ],
+      "context": [],
+      "recommended_actions": [
+        "Check the referenced upstream API endpoint and provider status."
+      ],
+      "confidence": 0.9,
+      "correlation": {
+        "strategy": "request_id",
+        "key": "abc-1",
+        "window_seconds": null,
+        "source_count": 1
+      },
+      "similar_incidents": []
+    }
+  ]
 }
 ```
 
