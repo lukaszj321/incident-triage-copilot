@@ -6,11 +6,35 @@ Najwazniejsza zasada: kazdy wniosek musi miec dowody w konkretnych, niezmodyfiko
 
 Projekt nie uzywa LLM, embeddingow, PostgreSQL, SQLAlchemy, frontendu ani uwierzytelniania.
 
+## Spis treści
+
+- [Cel MVP](#cel-mvp)
+- [Aktualny zakres](#aktualny-zakres)
+- [Wymagania](#wymagania)
+- [Instalacja lokalna](#instalacja-lokalna)
+- [CLI](#cli)
+- [API](#api)
+- [Request ID i logowanie](#request-id-i-logowanie)
+- [Kontrakt raportu JSON](#kontrakt-raportu-json)
+- [Fixture'y](#fixturey)
+- [SQLite](#sqlite)
+- [Quality gates](#quality-gates)
+- [Docker](#docker)
+- [Docker Compose](#docker-compose)
+- [CI](#ci)
+- [Struktura projektu](#struktura-projektu)
+- [Roadmap](#roadmap)
+- [Ograniczenia](#ograniczenia)
+
 ## Cel MVP
 
 MVP analizuje niestrukturyzowane logi tekstowe, rozpoznaje obslugiwane scenariusze incydentow, laczy zdarzenia w wielu zrodlach przez `request_id` lub okno czasowe i zwraca raport JSON. Historia rozwiazanych incydentow jest opcjonalna i zapisywana lokalnie w SQLite.
 
-## Aktualny Zakres
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
+## Aktualny zakres
 
 - CLI: `python triage.py ...` oraz instalowalna komenda `incident-triage`.
 - API HTTP: FastAPI z `/health`, `/ready`, `/v1/analyze`, `/v1/analyze-bundle`, `/v1/history`.
@@ -26,13 +50,35 @@ Obslugiwane scenariusze wykrywania:
 - blad polaczenia z baza,
 - nieudana autoryzacja.
 
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
 ## Wymagania
 
-- Python 3.12,
-- pytest,
-- opcjonalnie Docker do uruchomienia kontenera.
+### Runtime
 
-## Instalacja Lokalna
+- Python 3.12 lub nowszy,
+- zaleznosci instalowane automatycznie z `pyproject.toml`,
+- opcjonalnie Docker i Docker Compose.
+
+### Development
+
+- zaleznosci z grupy `.[dev]`,
+- pytest,
+- pytest-cov,
+- Ruff,
+- mypy,
+- build,
+- httpx2.
+
+`pyproject.toml` pozostaje zrodlem prawdy dla zaleznosci i ich wersji.
+
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
+## Instalacja lokalna
 
 ```powershell
 python -m venv .venv
@@ -45,6 +91,10 @@ Instalacja bez zaleznosci developerskich:
 ```powershell
 python -m pip install -e .
 ```
+
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
 
 ## CLI
 
@@ -66,6 +116,10 @@ incident-triage --version
 ```
 
 `triage.py` pozostaje cienkim adapterem do `incident_triage.cli:main`; logika CLI nie jest duplikowana.
+
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
 
 ## API
 
@@ -106,7 +160,11 @@ OpenAPI jest dostepne pod:
 - `/docs`,
 - `/openapi.json`.
 
-## Request ID I Logowanie
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
+## Request ID i logowanie
 
 API akceptuje opcjonalny naglowek `X-Request-ID`. Poprawna wartosc ma 1-128 znakow i moze zawierac litery, cyfry, `-`, `_`, `.`. Brak lub niepoprawna wartosc jest zastepowana UUID. Odpowiedz zawsze zawiera `X-Request-ID`.
 
@@ -138,7 +196,11 @@ Kazdy request API zapisuje jeden rekord JSON na stdout:
 
 Log requestu nie zawiera body, evidence, context, tokenow ani surowych bledow SQLite.
 
-## Kontrakt Raportu JSON
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
+## Kontrakt raportu JSON
 
 Aktualny `schema_version` publicznych odpowiedzi analizy i historii to `0.4`.
 
@@ -174,6 +236,10 @@ Kazdy element `evidence` i `context` zawiera:
 
 Brak rozpoznanego incydentu zwraca `status: "no_incident_detected"`, puste `findings` i nie wymysla przyczyny ani dowodow.
 
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
 ## Fixture'y
 
 Przyklady uzytkowe sa w `fixtures/`:
@@ -186,6 +252,10 @@ Przyklady uzytkowe sa w `fixtures/`:
 - `bundle/` z wieloma zrodlami do analizy paczki.
 
 Testy korzystaja z tych samych plikow.
+
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
 
 ## SQLite
 
@@ -201,7 +271,11 @@ Bledna konfiguracja storage, na przyklad uszkodzony plik SQLite, nieobslugiwana 
 
 W kontenerze baza jest pod `/data/incidents.db`; trwalosc zapewnia volume.
 
-## Quality Gates
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
+## Quality gates
 
 ```powershell
 .\.venv\Scripts\python.exe -m ruff check .
@@ -214,7 +288,11 @@ W kontenerze baza jest pod `/data/incidents.db`; trwalosc zapewnia volume.
   --cov-fail-under=90
 ```
 
-Zaleznosci developerskie obejmuja `pytest`, `pytest-cov`, `ruff`, `mypy` i `httpx2`.
+Zaleznosci developerskie obejmuja `pytest`, `pytest-cov`, `ruff`, `mypy`, `build` i `httpx2`.
+
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
 
 ## Docker
 
@@ -232,6 +310,10 @@ docker run --rm -p 8000:8000 -v incident-triage-data:/data incident-triage-copil
 
 Obraz uzywa oficjalnego Python 3.12 slim, instaluje projekt jako pakiet, nie instaluje zaleznosci developerskich, uruchamia `uvicorn` bez `--reload`, dziala jako uzytkownik non-root i wystawia port `8000`.
 
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
 ## Docker Compose
 
 ```powershell
@@ -240,11 +322,19 @@ docker compose up --build
 
 `compose.yaml` zawiera jeden serwis API i named volume `incident-triage-data` zamontowany pod `/data`.
 
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
 ## CI
 
 `.github/workflows/ci.yml` uruchamia sie dla `push` i `pull_request`. Pipeline wykonuje instalacje z zaleznosciami developerskimi, Ruff, format check, mypy, pytest z branch coverage i progiem 90%, a nastepnie buduje obraz Docker. Workflow nie publikuje obrazu i nie wymaga sekretow.
 
-## Struktura Projektu
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
+## Struktura projektu
 
 ```text
 .
@@ -285,15 +375,24 @@ docker compose up --build
 `-- triage.py
 ```
 
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
+
 ## Roadmap
 
-- dalsza normalizacja roznych formatow logow,
-- bogatsza korelacja zdarzen,
-- historia podobnych incydentow w SQLite/PostgreSQL,
-- rozwijanie publicznego API FastAPI,
-- opcjonalna warstwa LLM oparta wylacznie na dostarczonych dowodach.
+- wiecej formatow i regul normalizacji logow,
+- rozbudowane reguly korelacji,
+- opcjonalny backend PostgreSQL,
+- uwierzytelnianie API,
+- opcjonalna warstwa LLM dzialajaca wylacznie na evidence,
+- obserwowalnosc przez OpenTelemetry lub Prometheus.
 
-Roadmapa nie opisuje funkcji ukonczonych.
+Roadmapa opisuje przyszle kierunki, nie funkcje ukonczone ani konkretne wersje.
+
+[↑ Powrót do spisu treści](#spis-treści)
+
+---
 
 ## Ograniczenia
 
@@ -309,3 +408,5 @@ Roadmapa nie opisuje funkcji ukonczonych.
 - Brak streamingu i obserwowania katalogu.
 - Brak rekurencyjnego skanowania bundle.
 - Brak zapisu calej paczki bundle do historii jednym poleceniem.
+
+[↑ Powrót do spisu treści](#spis-treści)
