@@ -20,7 +20,7 @@ FIXTURES = Path(__file__).parents[1] / "fixtures"
 def test_cli_prints_json_report() -> None:
     stdout = io.StringIO()
 
-    exit_code = main([str(FIXTURES / "api_timeout.log")], stdout=stdout)
+    exit_code = main(["fixtures/api_timeout.log"], stdout=stdout)
 
     assert exit_code == 0
     report = json.loads(stdout.getvalue())
@@ -33,7 +33,7 @@ def test_cli_prints_json_report() -> None:
 def test_cli_preserves_unicode_in_json_output() -> None:
     stdout = io.StringIO()
 
-    exit_code = main([str(FIXTURES / "api_timeout.log")], stdout=stdout)
+    exit_code = main(["fixtures/api_timeout.log"], stdout=stdout)
 
     assert exit_code == 0
     assert "zażółć" in stdout.getvalue()

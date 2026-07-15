@@ -19,7 +19,7 @@ FIXTURES = Path(__file__).parents[1] / "fixtures"
 
 
 def test_text_and_file_analysis_share_same_findings() -> None:
-    path = FIXTURES / "api_timeout.log"
+    path = Path("fixtures/api_timeout.log")
     content = path.read_text(encoding="utf-8")
 
     from_file = analyze_log_file(path)
@@ -44,7 +44,7 @@ def test_store_history_from_text_does_not_depend_on_cli(tmp_path: Path) -> None:
 
 
 def test_select_finding_is_transport_independent() -> None:
-    report = analyze_log_file(FIXTURES / "mixed.log")
+    report = analyze_log_file(Path("fixtures/mixed.log"))
 
     selected = select_finding(report["findings"], "database_connection_error")
 
