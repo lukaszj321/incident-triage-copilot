@@ -1,0 +1,3 @@
+2026-07-15T13:00:02Z INFO request_id=req-42 service=backend calling payment provider endpoint=https://payments.example.test/v1/charge
+2026-07-15T13:10:05Z INFO service=backend worker=orders preparing reconciliation
+unstructured backend line without timestamp request_id=req-42 note=kept

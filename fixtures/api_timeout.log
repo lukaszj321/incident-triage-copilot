@@ -1,0 +1,4 @@
+2026-07-15T09:14:02Z INFO request_id=abc-1 user=zażółć start checkout submit
+2026-07-15T09:14:05Z ERROR request_id=abc-1 upstream payment API timed out after 3000ms endpoint=https://payments.example.test/v1/charge
+2026-07-15T09:14:05Z INFO request_id=abc-1 response_status=502
+2026-07-15T09:14:06Z INFO request_id=other-1 unrelated checkout completed

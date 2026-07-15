@@ -1,0 +1,4 @@
+2026-07-15T12:00:00Z INFO request_id=noise-1 user opened dashboard locale=pl-PL note=zażółć
+partially structured line without timestamp but with request_id=noise-1 and no incident terms
+2026-07-15T12:00:02Z WARN request_id=noise-1 slow response observed
+2026-07-15T12:00:03Z INFO request_id=noise-1 completed status=200

@@ -1,0 +1,2 @@
+2026-07-15T13:00:04Z INFO request_id=req-unrelated service=unrelated not part of context
+2026-07-15T13:10:50Z INFO service=unrelated outside time window

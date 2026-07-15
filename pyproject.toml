@@ -1,0 +1,53 @@
+[project]
+name = "incident-triage-copilot"
+version = "0.6.0"
+description = "MVP CLI for evidence-based incident log triage without LLMs."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "httpx2",
+    "mypy",
+    "pytest-cov",
+    "pytest",
+    "ruff",
+]
+
+[project.scripts]
+incident-triage = "incident_triage.cli:main"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["incident_triage"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true
+
+[tool.coverage.run]
+branch = true
+source = ["incident_triage"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--basetemp=.pytest-tmp"
+
+[tool.setuptools.packages.find]
+include = ["incident_triage*"]

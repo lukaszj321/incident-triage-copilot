@@ -1,0 +1,7 @@
+2026-07-15T09:14:02Z INFO request_id=abc-1 start checkout submit
+2026-07-15T09:14:05Z ERROR request_id=abc-1 upstream payment API timed out after 3000ms endpoint=https://payments.example.test/v1/charge
+2026-07-15T09:14:05Z INFO request_id=abc-1 response_status=502
+2026-07-15T10:21:00Z INFO worker=orders starting reconciliation
+2026-07-15T10:21:11Z ERROR worker=orders database connection refused host=db.internal port=5432
+2026-07-15T10:21:20Z WARN worker=orders retry scheduled in 30s
+2026-07-15T11:30:01Z WARN request_id=login-7 authorization denied invalid token subject=lukasz status=403

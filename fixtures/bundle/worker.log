@@ -1,0 +1,2 @@
+2026-07-15T13:00:05Z ERROR request_id=req-42 service=worker payment API timed out after 3000ms endpoint=https://payments.example.test/v1/charge
+2026-07-15T13:00:06Z INFO request_id=req-77 service=worker unrelated job finished

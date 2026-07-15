@@ -1,0 +1,2 @@
+2026-07-15T13:00:03Z INFO request_id=req-42 service=auth token accepted subject=lukasz
+2026-07-15T13:10:15Z WARN service=auth authorization denied invalid token status=403
