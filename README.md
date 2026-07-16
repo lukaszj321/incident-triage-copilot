@@ -1,14 +1,20 @@
 # Incident Triage Copilot
 
-Incident Triage Copilot zamienia tekstowe logi aplikacyjne w uporzadkowany raport wstepnej diagnozy incydentu.
+[![CI](https://github.com/lukaszj321/incident-triage-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/lukaszj321/incident-triage-copilot/actions/workflows/ci.yml)
 
-Narzedzie koreluje powiazane wpisy po `request_id` lub czasie, rozpoznaje obslugiwane typy awarii, pokazuje dokladne linie logu bedace dowodem i proponuje kolejne kroki diagnostyczne.
+Aktualna wersja: `0.6.1`
 
-Nie zastepuje analizy inzyniera i nie wykonuje automatycznej naprawy. Automatyzuje pierwszy, powtarzalny etap triage'u.
+Release: <https://github.com/lukaszj321/incident-triage-copilot/releases/tag/v0.6.1>
 
-Najwazniejsza zasada: kazdy wniosek musi miec dowody w konkretnych, niezmodyfikowanych liniach logu. Aplikacja nie zgaduje przyczyny bez evidence.
+Incident Triage Copilot zamienia tekstowe logi aplikacyjne w uporządkowany raport wstępnej diagnozy incydentu.
 
-Projekt nie uzywa LLM, embeddingow, PostgreSQL, SQLAlchemy, frontendu ani uwierzytelniania.
+Narzędzie koreluje powiązane wpisy po `request_id` lub czasie, rozpoznaje obsługiwane typy awarii, pokazuje dokładne linie logu będące dowodem i proponuje kolejne kroki diagnostyczne.
+
+Nie zastępuje analizy inżyniera i nie wykonuje automatycznej naprawy. Automatyzuje pierwszy, powtarzalny etap triage'u.
+
+Najważniejsza zasada: każdy wniosek musi mieć dowody w konkretnych, niezmodyfikowanych liniach logu. Aplikacja nie zgaduje przyczyny bez evidence.
+
+Projekt nie używa LLM, embeddingów, PostgreSQL, SQLAlchemy, frontendu ani uwierzytelniania.
 
 ## Spis treści
 
@@ -40,10 +46,10 @@ flowchart LR
     A[CLI lub FastAPI] --> B[Logi tekstowe]
     B --> C[Parser i normalizacja]
     C --> D[Korelacja request_id lub okno 30 s]
-    D --> E[Deterministyczne reguly detekcji]
+    D --> E[Deterministyczne reguły detekcji]
     E --> F[Finding z evidence i context]
     F --> G[Raport JSON]
-    H[(Historia SQLite)] --> I[Ranking podobnych incydentow]
+    H[(Historia SQLite)] --> I[Ranking podobnych incydentów]
     F --> I
     I --> G
 ```
@@ -136,7 +142,7 @@ logi -> normalizacja -> korelacja -> wykrycie reguły -> raport z dowodami
 
 ## Cel MVP
 
-MVP analizuje niestrukturyzowane logi tekstowe, rozpoznaje obslugiwane scenariusze incydentow, laczy zdarzenia w wielu zrodlach przez `request_id` lub okno czasowe i zwraca raport JSON. Historia rozwiazanych incydentow jest opcjonalna i zapisywana lokalnie w SQLite.
+MVP analizuje niestrukturyzowane logi tekstowe, rozpoznaje obsługiwane scenariusze incydentów, łączy zdarzenia w wielu źródłach przez `request_id` lub okno czasowe i zwraca raport JSON. Historia rozwiązanych incydentów jest opcjonalna i zapisywana lokalnie w SQLite.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -146,16 +152,16 @@ MVP analizuje niestrukturyzowane logi tekstowe, rozpoznaje obslugiwane scenarius
 
 - CLI: `python triage.py ...` oraz instalowalna komenda `incident-triage`.
 - API HTTP: FastAPI z `/health`, `/ready`, `/v1/analyze`, `/v1/analyze-bundle`, `/v1/history`.
-- Analiza pojedynczego logu i paczki plikow `.log`.
-- SQLite dla historii rozwiazanych incydentow i podobnych incydentow.
-- Strukturalne logowanie requestow API jako pojedyncze rekordy JSON na stdout.
+- Analiza pojedynczego logu i paczki plików `.log`.
+- SQLite dla historii rozwiązanych incydentów i podobnych incydentów.
+- Strukturalne logowanie requestów API jako pojedyncze rekordy JSON na stdout.
 - Middleware `X-Request-ID`.
 - Dockerfile, Docker Compose i workflow GitHub Actions.
 
-Obslugiwane scenariusze wykrywania:
+Obsługiwane scenariusze wykrywania:
 
-- timeout zewnetrznego API,
-- blad polaczenia z baza,
+- timeout zewnętrznego API,
+- błąd połączenia z bazą,
 - nieudana autoryzacja.
 
 [↑ Powrót do spisu treści](#spis-treści)
@@ -167,12 +173,12 @@ Obslugiwane scenariusze wykrywania:
 ### Runtime
 
 - Python 3.12 lub nowszy,
-- zaleznosci instalowane automatycznie z `pyproject.toml`,
+- zależności instalowane automatycznie z `pyproject.toml`,
 - opcjonalnie Docker i Docker Compose.
 
 ### Development
 
-- zaleznosci z grupy `.[dev]`,
+- zależności z grupy `.[dev]`,
 - pytest,
 - pytest-cov,
 - Ruff,
@@ -180,7 +186,7 @@ Obslugiwane scenariusze wykrywania:
 - build,
 - httpx2.
 
-`pyproject.toml` pozostaje zrodlem prawdy dla zaleznosci i ich wersji.
+`pyproject.toml` pozostaje źródłem prawdy dla zależności i ich wersji.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -194,7 +200,7 @@ python -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
-Instalacja bez zaleznosci developerskich:
+Instalacja bez zależności developerskich:
 
 ```powershell
 python -m pip install -e .
@@ -213,7 +219,7 @@ python triage.py analyze-bundle fixtures/bundle
 python triage.py history list --db data/incidents.db
 ```
 
-Po instalacji pakietu dziala ten sam CLI jako entry point:
+Po instalacji pakietu działa ten sam CLI jako entry point:
 
 ```powershell
 incident-triage fixtures/api_timeout.log
@@ -237,7 +243,7 @@ Uruchomienie lokalne bez historii:
 .\.venv\Scripts\python.exe -m uvicorn incident_triage.api:app --reload
 ```
 
-Uruchomienie z historia SQLite:
+Uruchomienie z historią SQLite:
 
 ```powershell
 $env:INCIDENT_TRIAGE_DB = "data/incidents.db"
@@ -247,23 +253,23 @@ $env:INCIDENT_TRIAGE_DB = "data/incidents.db"
 Endpointy:
 
 - `GET /health` - sprawdza tylko proces aplikacji i nie tworzy bazy,
-- `GET /ready` - sprawdza gotowosc storage, jezeli historia jest skonfigurowana,
+- `GET /ready` - sprawdza gotowość storage, jeżeli historia jest skonfigurowana,
 - `POST /v1/analyze`,
 - `POST /v1/analyze-bundle`,
 - `POST /v1/history`,
 - `GET /v1/history`,
 - `GET /v1/history/{incident_id}`.
 
-`/health` zwraca `service_version`, ktora pochodzi z centralnej wersji aplikacji `0.6.1`.
+`/health` zwraca `service_version`, która pochodzi z centralnej wersji aplikacji `0.6.1`.
 
-Projekt rozroznia cztery wersje:
+Projekt rozróżnia cztery wersje:
 
 - wersja aplikacji: `0.6.1`,
-- publiczny `schema_version` raportow i historii: `0.4`,
+- publiczny `schema_version` raportów i historii: `0.4`,
 - `api_version`: `1`,
 - wersja schematu SQLite: `1`.
 
-OpenAPI jest dostepne pod:
+OpenAPI jest dostępne pod:
 
 - `/docs`,
 - `/openapi.json`.
@@ -274,9 +280,9 @@ OpenAPI jest dostepne pod:
 
 ## Request ID i logowanie
 
-API akceptuje opcjonalny naglowek `X-Request-ID`. Poprawna wartosc ma 1-128 znakow i moze zawierac litery, cyfry, `-`, `_`, `.`. Brak lub niepoprawna wartosc jest zastepowana UUID. Odpowiedz zawsze zawiera `X-Request-ID`.
+API akceptuje opcjonalny nagłówek `X-Request-ID`. Poprawna wartość ma 1-128 znaków i może zawierać litery, cyfry, `-`, `_`, `.`. Brak lub niepoprawna wartość jest zastępowana UUID. Odpowiedź zawsze zawiera `X-Request-ID`.
 
-Kontrolowane bledy API zawieraja `request_id`:
+Kontrolowane błędy API zawierają `request_id`:
 
 ```json
 {
@@ -289,7 +295,7 @@ Kontrolowane bledy API zawieraja `request_id`:
 }
 ```
 
-Kazdy request API zapisuje jeden rekord JSON na stdout:
+Każdy request API zapisuje jeden rekord JSON na stdout:
 
 ```json
 {
@@ -302,7 +308,7 @@ Kazdy request API zapisuje jeden rekord JSON na stdout:
 }
 ```
 
-Log requestu nie zawiera body, evidence, context, tokenow ani surowych bledow SQLite.
+Log requestu nie zawiera body, evidence, context, tokenów ani surowych błędów SQLite.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -357,17 +363,17 @@ Aktualny `schema_version` publicznych odpowiedzi analizy i historii to `0.4`.
 }
 ```
 
-Kazdy element `evidence` i `context` zawiera:
+Każdy element `evidence` i `context` zawiera:
 
 ```json
 {
   "source_name": "worker.log",
   "line_number": 1,
-  "text": "dokladna, niezmodyfikowana linia logu"
+  "text": "dokładna, niezmodyfikowana linia logu"
 }
 ```
 
-Brak rozpoznanego incydentu zwraca `status: "no_incident_detected"`, puste `findings` i nie wymysla przyczyny ani dowodow.
+Brak rozpoznanego incydentu zwraca `status: "no_incident_detected"`, puste `findings` i nie wymyśla przyczyny ani dowodów.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -375,16 +381,16 @@ Brak rozpoznanego incydentu zwraca `status: "no_incident_detected"`, puste `find
 
 ## Fixture'y
 
-Przyklady uzytkowe sa w `fixtures/`:
+Przykłady użytkowe są w `fixtures/`:
 
 - `api_timeout.log`,
 - `database_connection_error.log`,
 - `authorization_failure.log`,
 - `mixed.log`,
 - `unknown_incident.log`,
-- `bundle/` z wieloma zrodlami do analizy paczki.
+- `bundle/` z wieloma źródłami do analizy paczki.
 
-Testy korzystaja z tych samych plikow.
+Testy korzystają z tych samych plików.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -392,17 +398,17 @@ Testy korzystaja z tych samych plikow.
 
 ## SQLite
 
-Historia jest opcjonalna. Po ustawieniu `INCIDENT_TRIAGE_DB` lub `--db` aplikacja uzywa lokalnej bazy SQLite. Polaczenia wlaczaja `foreign_keys`, `busy_timeout`, `row_factory`, a zapisywalna baza jest inicjalizowana w trybie WAL. Nie ma globalnego polaczenia.
+Historia jest opcjonalna. Po ustawieniu `INCIDENT_TRIAGE_DB` lub `--db` aplikacja używa lokalnej bazy SQLite. Połączenia włączają `foreign_keys`, `busy_timeout`, `row_factory`, a zapisywalna baza jest inicjalizowana w trybie WAL. Nie ma globalnego połączenia.
 
-API inicjalizuje schemat SQLite podczas kontrolowanego startupu FastAPI, jezeli historia jest skonfigurowana. Inicjalizacja jest idempotentna i uzywa tej samej warstwy storage co zapis historii. Import modulu API, generowanie OpenAPI oraz `GET /health` nie tworza bazy. `GET /ready` pozostaje operacja tylko do odczytu.
+API inicjalizuje schemat SQLite podczas kontrolowanego startupu FastAPI, jeżeli historia jest skonfigurowana. Inicjalizacja jest idempotentna i używa tej samej warstwy storage co zapis historii. Import modułu API, generowanie OpenAPI oraz `GET /health` nie tworzą bazy. `GET /ready` pozostaje operacją tylko do odczytu.
 
-Jezeli historia nie jest skonfigurowana, aplikacja nie tworzy domyslnej bazy: `/health` i `/ready` zwracaja `history_storage = "disabled"`, analiza dziala, a endpointy historii zwracaja kontrolowane `503`.
+Jeżeli historia nie jest skonfigurowana, aplikacja nie tworzy domyślnej bazy: `/health` i `/ready` zwracają `history_storage = "disabled"`, analiza działa, a endpointy historii zwracają kontrolowane `503`.
 
-Jezeli historia jest skonfigurowana na swiezym volume, startup tworzy plik bazy i schemat. Wtedy `/ready` zwraca `200` oraz `{"status": "ready", "history_storage": "available"}`, a `GET /v1/history` zwraca pusta historie.
+Jeżeli historia jest skonfigurowana na świeżym volume, startup tworzy plik bazy i schemat. Wtedy `/ready` zwraca `200` oraz `{"status": "ready", "history_storage": "available"}`, a `GET /v1/history` zwraca pustą historię.
 
-Bledna konfiguracja storage, na przyklad uszkodzony plik SQLite, nieobslugiwana wersja schematu albo brak mozliwosci utworzenia katalogu bazy, powoduje fail-fast podczas startupu aplikacji. Publiczne odpowiedzi nie ujawniaja pelnej sciezki bazy, surowego bledu SQLite ani tracebacka.
+Błędna konfiguracja storage, na przykład uszkodzony plik SQLite, nieobsługiwana wersja schematu albo brak możliwości utworzenia katalogu bazy, powoduje fail-fast podczas startupu aplikacji. Publiczne odpowiedzi nie ujawniają pełnej ścieżki bazy, surowego błędu SQLite ani tracebacka.
 
-W kontenerze baza jest pod `/data/incidents.db`; trwalosc zapewnia volume.
+W kontenerze baza jest pod `/data/incidents.db`; trwałość zapewnia volume.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -421,7 +427,7 @@ W kontenerze baza jest pod `/data/incidents.db`; trwalosc zapewnia volume.
   --cov-fail-under=90
 ```
 
-Zaleznosci developerskie obejmuja `pytest`, `pytest-cov`, `ruff`, `mypy`, `build` i `httpx2`.
+Zależności developerskie obejmują `pytest`, `pytest-cov`, `ruff`, `mypy`, `build` i `httpx2`.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -441,7 +447,7 @@ Uruchomienie:
 docker run --rm -p 8000:8000 -v incident-triage-data:/data incident-triage-copilot:local
 ```
 
-Obraz uzywa oficjalnego Python 3.12 slim, instaluje projekt jako pakiet, nie instaluje zaleznosci developerskich, uruchamia `uvicorn` bez `--reload`, dziala jako uzytkownik non-root i wystawia port `8000`.
+Obraz używa oficjalnego Python 3.12 slim, instaluje projekt jako pakiet, nie instaluje zależności developerskich, uruchamia `uvicorn` bez `--reload`, działa jako użytkownik non-root i wystawia port `8000`.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -461,7 +467,7 @@ docker compose up --build
 
 ## CI
 
-`.github/workflows/ci.yml` uruchamia sie dla `push` i `pull_request`. Pipeline wykonuje instalacje z zaleznosciami developerskimi, Ruff, format check, mypy, pytest z branch coverage i progiem 90%, a nastepnie buduje obraz Docker. Workflow nie publikuje obrazu i nie wymaga sekretow.
+`.github/workflows/ci.yml` uruchamia się dla `push` i `pull_request`. Pipeline wykonuje instalację z zależnościami developerskimi, Ruff, format check, mypy, pytest z branch coverage i progiem 90%, a następnie buduje obraz Docker. Workflow nie publikuje obrazu i nie wymaga sekretów.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -514,14 +520,14 @@ docker compose up --build
 
 ## Roadmap
 
-- wiecej formatow i regul normalizacji logow,
-- rozbudowane reguly korelacji,
+- więcej formatów i reguł normalizacji logów,
+- rozbudowane reguły korelacji,
 - opcjonalny backend PostgreSQL,
 - uwierzytelnianie API,
-- opcjonalna warstwa LLM dzialajaca wylacznie na evidence,
-- obserwowalnosc przez OpenTelemetry lub Prometheus.
+- opcjonalna warstwa LLM działająca wyłącznie na evidence,
+- obserwowalność przez OpenTelemetry lub Prometheus.
 
-Roadmapa opisuje przyszle kierunki, nie funkcje ukonczone ani konkretne wersje.
+Roadmapa opisuje przyszłe kierunki, nie funkcje ukończone ani konkretne wersje.
 
 [↑ Powrót do spisu treści](#spis-treści)
 
@@ -529,17 +535,17 @@ Roadmapa opisuje przyszle kierunki, nie funkcje ukonczone ani konkretne wersje.
 
 ## Ograniczenia
 
-- Brak LLM i embeddingow.
+- Brak LLM i embeddingów.
 - Brak PostgreSQL.
 - Brak SQLAlchemy.
 - Brak frontendu.
 - Brak uwierzytelniania.
 - Brak Redis, Celery, Kubernetes, reverse proxy i TLS.
-- Brak zewnetrznego systemu logowania, Prometheusa i OpenTelemetry.
+- Brak zewnętrznego systemu logowania, Prometheusa i OpenTelemetry.
 - Brak automatycznego deploymentu.
 - Brak multipart upload.
 - Brak streamingu i obserwowania katalogu.
 - Brak rekurencyjnego skanowania bundle.
-- Brak zapisu calej paczki bundle do historii jednym poleceniem.
+- Brak zapisu całej paczki bundle do historii jednym poleceniem.
 
 [↑ Powrót do spisu treści](#spis-treści)
